@@ -1,0 +1,28 @@
+services:
+  heptapod:
+    image: heptapod/heptapod:latest
+    container_name: heptapod
+    hostname: heptapod.local
+    restart: unless-stopped
+    shm_size: 256m
+
+    ports:
+      - "8080:80"
+      - "8443:443"
+      - "2222:22"
+
+    volumes:
+      - heptapod-config:/etc/gitlab
+      - heptapod-logs:/var/log/gitlab
+      - heptapod-data:/var/opt/gitlab
+
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://localhost'
+        nginx['listen_port'] = 80
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
+      GITLAB_ROOT_PASSWORD: 'olderStuff123'
+volumes:
+  heptapod-config:
+  heptapod-logs:
+  heptapod-data:
