@@ -1,13 +1,18 @@
-Reproducing the WordPress Login, Registration, and Dashboard Setup
+# Reproducing the WordPress Login, Registration, and Dashboard Setup
+
 This guide documents the setup already completed. It covers the Docker
 Compose WordPress environment, the child theme, its styling, the custom
 authentication handlers, and the three existing shortcodes.
-Scope: this guide includes Home (the WordPress site homepage),
-Login, Register, and Dashboard pages. It does not add a new Home
-shortcode.
 
-1. Project structure
+> Scope: this guide includes **Home (the WordPress site homepage),
+> Login, Register, and Dashboard pages**. It does **not** add a new Home
+> shortcode.
+
+## 1. Project structure
+
 The project directory is:
+
+``` text
 local-services/wordpress/
 ├── docker-compose.yml
 └── WordPress files (inside the Docker volume)
@@ -16,10 +21,16 @@ local-services/wordpress/
             └── my-personal-theme/
                 ├── style.css
                 └── functions.php
-The custom theme is named My Personal Theme and is a child theme of
-twentytwentyfive.
-2. Start WordPress with Docker Compose
-Create docker-compose.yml in the project directory:
+```
+
+The custom theme is named `My Personal Theme` and is a child theme of
+`twentytwentyfive`.
+
+## 2. Start WordPress with Docker Compose
+
+Create `docker-compose.yml` in the project directory:
+
+``` yaml
 services:
   wordpress:
     image: wordpress
@@ -48,22 +59,45 @@ services:
 volumes:
   wordpress:
   db:
+```
+
 Start the containers:
+
+``` bash
 docker compose up -d
+```
+
 Open WordPress in your browser:
+
+``` text
 http://localhost:8080
+```
+
 Complete the normal WordPress installation if this is a fresh
 environment.
-3. Create the child theme
+
+## 3. Create the child theme
+
 Enter the WordPress container:
+
+``` bash
 docker compose exec wordpress bash
+```
+
 Go to the themes directory and create the theme folder:
+
+``` bash
 cd /var/www/html/wp-content/themes/
 mkdir -p my-personal-theme
 cd my-personal-theme
-Create style.css with this theme header and the CSS used for the
+```
+
+Create `style.css` with this theme header and the CSS used for the
 authentication and dashboard layouts.
-style.css
+
+### `style.css`
+
+``` css
 /*
 Theme Name: My Personal Theme
 Template: twentytwentyfive
@@ -167,9 +201,15 @@ Version: 1.0
     border-radius: 7px;
     text-decoration: none;
 }
-4. Add the theme functionality
-Create functions.php in the same theme directory.
-functions.php
+```
+
+## 4. Add the theme functionality
+
+Create `functions.php` in the same theme directory.
+
+### `functions.php`
+
+``` php
 <?php
 
 function my_personal_theme_styles() {
@@ -487,91 +527,121 @@ function my_dashboard_shortcode() {
 }
 
 add_shortcode('my_private_dashboard', 'my_dashboard_shortcode');
-5. Activate the theme
+```
+
+## 5. Activate the theme
+
 In WordPress Admin:
-1. Open Appearance → Themes.
-2. Find My Personal Theme.
-3. Click Activate.
+
+1.  Open **Appearance → Themes**.
+2.  Find **My Personal Theme**.
+3.  Click **Activate**.
+
 The theme directory should contain:
+
+``` text
 my-personal-theme/
 ├── style.css
 └── functions.php
-6. Enable user registration
+```
+
+## 6. Enable user registration
+
 In WordPress Admin:
-1. Open Settings → General.
-2. Find Membership.
-3. Enable Anyone can register.
-4. Set New User Default Role to Subscriber.
-5. Save Changes.
+
+1.  Open **Settings → General**.
+2.  Find **Membership**.
+3.  Enable **Anyone can register**.
+4.  Set **New User Default Role** to **Subscriber**.
+5.  Save Changes.
+
 Registration is checked in the PHP handler and shortcode, so the
 registration form will not be available while registration is disabled.
-7. Create the three shortcode pages
-Open Pages → Add New and create the following pages. Add the
+
+## 7. Create the three shortcode pages
+
+Open **Pages → Add New** and create the following pages. Add the
 corresponding shortcode in each page's content.
 
   Page title   Page slug     Page content
-  Login        login       [my_login]
-Register     register    [my_register]
-Dashboard    dashboard   [my_private_dashboard]
+  ------------ ------------- --------------------------
+  Login        `login`       `[my_login]`
+  Register     `register`    `[my_register]`
+  Dashboard    `dashboard`   `[my_private_dashboard]`
 
 Publish all three pages.
 
 The resulting URLs should be:
+
+``` text
 http://localhost:8080/login/
 http://localhost:8080/register/
 http://localhost:8080/dashboard/
+```
+
 The site's Home page is the normal WordPress homepage. No additional
 Home shortcode is part of this setup.
-8. How the authentication flow works
-1. A visitor opens the Register page.
-2. The registration shortcode displays the account creation form if
-   WordPress registration is enabled.
-3. The form submits to admin-post.php using the my_custom_register
-   action.
-4. The registration handler checks the nonce, validates the username
-   and email, checks the 12-character minimum password length, and
-   creates a Subscriber account.
-5. After successful registration, the visitor is redirected to
-   /login/?registered=1.
-6. The Login page displays the success message and the login form.
-7. The login form submits using the my_custom_login action.
-8. On successful login, the visitor is redirected to /dashboard/.
-9. Logged-out visitors who open the Dashboard page are redirected to
-   /login/.
+
+## 8. How the authentication flow works
+
+1.  A visitor opens the Register page.
+2.  The registration shortcode displays the account creation form if
+    WordPress registration is enabled.
+3.  The form submits to `admin-post.php` using the `my_custom_register`
+    action.
+4.  The registration handler checks the nonce, validates the username
+    and email, checks the 12-character minimum password length, and
+    creates a Subscriber account.
+5.  After successful registration, the visitor is redirected to
+    `/login/?registered=1`.
+6.  The Login page displays the success message and the login form.
+7.  The login form submits using the `my_custom_login` action.
+8.  On successful login, the visitor is redirected to `/dashboard/`.
+9.  Logged-out visitors who open the Dashboard page are redirected to
+    `/login/`.
 10. The Dashboard shortcode displays the logged-in user's display name,
     an Edit Profile link, and a Logout link.
-9. Shortcode reference
-These are the three shortcodes implemented in functions.php:
+
+## 9. Shortcode reference
+
+These are the three shortcodes implemented in `functions.php`:
 
   Shortcode                  Purpose
-  [my_login]               Displays the custom login form
-[my_register]            Displays the custom registration form
-[my_private_dashboard]   Displays the logged-in user's dashboard
-10. Test the setup
+  -------------------------- -----------------------------------------
+  `[my_login]`               Displays the custom login form
+  `[my_register]`            Displays the custom registration form
+  `[my_private_dashboard]`   Displays the logged-in user's dashboard
+
+## 10. Test the setup
+
 Use a private/incognito browser window or log out before testing.
-- Open /register/ and create a test account.
-- Confirm that registration redirects to /login/?registered=1.
-- Log in using the new account.
-- Confirm that successful login redirects to /dashboard/.
-- Confirm that the dashboard shows the user's display name.
-- Test the Edit Profile link.
-- Test Logout and confirm that it returns to the homepage.
-- While logged out, open /dashboard/ and confirm that it redirects
-  to /login/.
-- While logged out, open /login/ and /register/ and confirm that
-  their forms display.
-11. Important implementation notes
-- The login and registration forms use WordPress nonces.
-- Registration checks whether WordPress user registration is enabled.
-- New users are assigned the subscriber role.
-- Registration enforces a minimum password length of 12 characters.
-- The dashboard page has a logged-out redirect, and the dashboard
-  shortcode also checks login status.
-- The login form label says "Username or Email", but the current
-  handler passes the submitted value directly as user_login to
-  wp_signon(). The supplied implementation does not separately
-  convert an email address to a username.
-- The Docker Compose file uses example database credentials. For a
-  production deployment, replace them with secure credentials and
-  review the WordPress and database configuration before exposing the
-  site publicly.
+
+-   Open `/register/` and create a test account.
+-   Confirm that registration redirects to `/login/?registered=1`.
+-   Log in using the new account.
+-   Confirm that successful login redirects to `/dashboard/`.
+-   Confirm that the dashboard shows the user's display name.
+-   Test the Edit Profile link.
+-   Test Logout and confirm that it returns to the homepage.
+-   While logged out, open `/dashboard/` and confirm that it redirects
+    to `/login/`.
+-   While logged out, open `/login/` and `/register/` and confirm that
+    their forms display.
+
+## 11. Important implementation notes
+
+-   The login and registration forms use WordPress nonces.
+-   Registration checks whether WordPress user registration is enabled.
+-   New users are assigned the `subscriber` role.
+-   Registration enforces a minimum password length of 12 characters.
+-   The dashboard page has a logged-out redirect, and the dashboard
+    shortcode also checks login status.
+-   The login form label says "Username or Email", but the current
+    handler passes the submitted value directly as `user_login` to
+    `wp_signon()`. The supplied implementation does not separately
+    convert an email address to a username.
+-   The Docker Compose file uses example database credentials. For a
+    production deployment, replace them with secure credentials and
+    review the WordPress and database configuration before exposing the
+    site publicly.
+
