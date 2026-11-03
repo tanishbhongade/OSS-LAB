@@ -40,7 +40,7 @@ Start from the current Ubuntu kernel configuration:
 
 ```bash
 cp /boot/config-$(uname -r) .config
-make oldconfig
+make olddefconfig
 ```
 
 Optionally open the configuration menu:
@@ -61,6 +61,10 @@ CONFIG_DRM_AMDGPU=m
 guarantee successful driver initialization.
 
 ## 4. Compile the kernel
+```bash
+scripts/config --file .config --set-str SYSTEM_TRUSTED_KEYS ""
+scripts/config --file .config --set-str SYSTEM_REVOCATION_KEYS ""
+```
 
 ```bash
 make -j$(nproc)
