@@ -67,6 +67,10 @@ scripts/config --file .config --set-str SYSTEM_REVOCATION_KEYS ""
 ```
 
 ```bash
+make olddefconfig
+```
+
+```bash
 make -j$(nproc)
 ```
 
